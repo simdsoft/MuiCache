@@ -1,5 +1,5 @@
 // nsFileVSI.cpp : Defines the exported functions for the DLL application.
-// V1.3: Clear all trail of x-studio.exe
+// V1.3: Add TaskPin support
 // V1.2: First release
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
