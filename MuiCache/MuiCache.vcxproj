@@ -98,6 +98,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MUICACHE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,6 +142,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,19 +151,24 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>Shlwapi.lib Propsys.lib %(AdditionalOptions)</AdditionalOptions>
       <NoEntryPoint>true</NoEntryPoint>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\nsis\crt.c" />
     <ClCompile Include="..\nsis\pluginapi.c" />
+    <ClCompile Include="msedge-pins.cpp" />
     <ClCompile Include="MuiCache.c" />
+    <ClCompile Include="ntosver.cpp" />
+    <ClCompile Include="shortcut.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nsis\api.h" />
     <ClInclude Include="..\nsis\nsis_tchar.h" />
     <ClInclude Include="..\nsis\pluginapi.h" />
+    <ClInclude Include="ComPtr.h" />
+    <ClInclude Include="shortcut.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

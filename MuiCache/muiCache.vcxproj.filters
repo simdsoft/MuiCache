@@ -27,6 +27,15 @@
     <ClCompile Include="..\nsis\crt.c">
       <Filter>pluginapi</Filter>
     </ClCompile>
+    <ClCompile Include="msedge-pins.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ntosver.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="shortcut.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nsis\api.h">
@@ -37,6 +46,12 @@
     </ClInclude>
     <ClInclude Include="..\nsis\pluginapi.h">
       <Filter>pluginapi</Filter>
+    </ClInclude>
+    <ClInclude Include="shortcut.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ComPtr.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

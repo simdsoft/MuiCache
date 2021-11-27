@@ -6,15 +6,22 @@
 #include <winreg.h>
 #include <shlwapi.h>
 #include <ShellAPI.h>
-
 #include "nsis/pluginapi.h" // nsis plugin
 
 #if defined(_DEBUG)
+#define MUICACHE_WAIT_DEBUGGER 1
 #pragma comment(lib, "Shlwapi.lib")
 #endif
 
 #define MAX_KEY_LENGTH 255
 #define MAX_VALUE_NAME 16383
+
+#define TB_PIN_OK   42
+#define TB_PIN_FAIL 31
+
+extern HRESULT TaskbarSetPinState(LPCTSTR pszPath, BOOL pinning);
+extern BOOL IsWindows10OrGreater();
+extern BOOL SetShortcutAppId(LPCTSTR shortcut, LPCTSTR appid);
 
 static void MuiCache_Clear(const wchar_t* imageName, HKEY hRegRoot, const wchar_t* cacheRegPath) {
 
@@ -151,14 +158,62 @@ extern "C" {
         EXDLL_INIT();
 
         popstring(shortcut);
-		result = (INT_PTR)ShellExecute(NULL, L"taskbarpin", shortcut, NULL, NULL, 0);
+		if(IsWindows10OrGreater())
+			result = TaskbarSetPinState(shortcut, TRUE) == S_OK ? TB_PIN_OK : TB_PIN_FAIL;
+		else
+			result = (INT_PTR)ShellExecute(NULL, L"taskbarpin", shortcut, NULL, NULL, 0);
 		pushint(result);
     }
 
+	void __declspec(dllexport) SetLnkAppId(HWND hwndParent, int string_size,
+		LPTSTR variables, stack_t** stacktop,
+		extra_parameters* extra, ...)
+    {
+        // note if you want parameters from the stack, pop them off in order.
+        // i.e. if you are called via exdll::myFunction file.dat read.txt
+        // calling popstring() the first time would give you file.dat,
+        // and the second time would give you read.txt. 
+        // you should empty the stack of your parameters, and ONLY your
+        // parameters.
+        TCHAR shortcut[512];
+		TCHAR lnk[512];
+		// INT_PTR result;
+        EXDLL_INIT();
+
+        popstring(shortcut);
+		popstring(lnk);
+
+		SetShortcutAppId(shortcut, lnk);
+		// pushint(result);
+    }
+
+
     BOOL WINAPI DllMain(HINSTANCE hInst, ULONG ul_reason_for_call, LPVOID lpReserved)
     {
-        // g_hInstance = hInst;
-        return TRUE;
+        // Perform actions based on the reason for calling.
+        switch (ul_reason_for_call)
+        {
+        case DLL_PROCESS_ATTACH:
+            // Initialize once for each new process.
+            // Return FALSE to fail DLL load.
+#if defined(MUICACHE_WAIT_DEBUGGER)
+            MessageBox(NULL, L"Waiting for visual studio debugger to attach...", L"Waiting for visual studio debugger to attach...", MB_OK|MB_ICONEXCLAMATION);
+#endif
+            break;
+
+        case DLL_THREAD_ATTACH:
+            // Do thread-specific initialization.
+            break;
+
+        case DLL_THREAD_DETACH:
+            // Do thread-specific cleanup.
+            break;
+
+        case DLL_PROCESS_DETACH:
+            // Perform any necessary cleanup.
+            break;
+        }
+        return TRUE;  // Successful DLL_PROCESS_ATTACH.
     }
 #if defined(__cplusplus)
 }
