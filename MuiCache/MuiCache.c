@@ -1,4 +1,5 @@
 // nsFileVSI.cpp : Defines the exported functions for the DLL application.
+// V1.4: TaskUnpin support wilchard
 // V1.3: Add TaskPin support
 // V1.2: First release
 #define WIN32_LEAN_AND_MEAN
@@ -98,6 +99,12 @@ static void MuiCache_Clear(const wchar_t* imageName, HKEY hRegRoot, const wchar_
     }
 }
 
+static BOOL StartsWith(LPCTSTR str1, LPCTSTR str2) {
+    int len1 = lstrlen(str1);
+    int len2 = lstrlen(str2);
+    return (len1 >= len2) && StrCmpNW(str1, str2, len2) == 0;
+}
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -134,12 +141,55 @@ extern "C" {
         // and the second time would give you read.txt. 
         // you should empty the stack of your parameters, and ONLY your
         // parameters.
-        TCHAR shortcut[512];
-		INT_PTR result;
+        TCHAR path[512];
+        TCHAR name[128];
+        INT_PTR result;
+        HANDLE hFind;
+        BOOL bFindRet;
+        int nPathLen;
+        WIN32_FIND_DATAW fd;
+
         EXDLL_INIT();
 
-        popstring(shortcut);
-		result = (INT_PTR)ShellExecute(NULL, L"taskbarunpin", shortcut, NULL, NULL, 0);
+        path[0] = '\0';
+        name[0] = '\0';
+        result = 0;
+
+        popstring(path);
+        popstring(name);
+
+        if(!name[0])
+            result = (INT_PTR)ShellExecute(NULL, L"taskbarunpin", path, NULL, NULL, 0);
+        else {
+            nPathLen = lstrlen(path);
+            memset(&fd, 0, sizeof(fd));
+            lstrcpyW(&path[nPathLen], L"*.lnk");
+            hFind = FindFirstFile(path, &fd);
+            if (hFind != INVALID_HANDLE_VALUE)
+            {
+                path[nPathLen] = '\0';
+                do {
+                    if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && !(fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) &&
+                        !(fd.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM))
+                    {
+                        if (StartsWith(fd.cFileName, name))
+                        {
+                            lstrcpyW(&path[nPathLen], fd.cFileName);
+
+                            if(result <= 32)
+                                result = (INT_PTR)ShellExecute(NULL, L"taskbarunpin", path, NULL, NULL, 0);
+                            else
+                                ShellExecute(NULL, L"taskbarunpin", path, NULL, NULL, 0);
+                        }
+                    }
+                    
+                    bFindRet = FindNextFile(hFind, &fd);
+                } while (bFindRet);
+
+                FindClose(hFind);
+            }
+        }
+
 		pushint(result);
     }
 
